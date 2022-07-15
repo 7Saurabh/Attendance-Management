@@ -8,7 +8,7 @@ from sqlalchemy import select
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'TheTopSecret'
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://twlepcxonmbsek:5c4820c0e8dd2b3d7a08655924c7124eae84744e7afef4d9269472fa64d3b5ad@ec2-52-205-61-230.compute-1.amazonaws.com:5432/d8eub7a2fanhuo'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://twlepcxonmbsek:5c4820c0e8dd2b3d7a08655924c7124eae84744e7afef4d9269472fa64d3b5ad@ec2-52-205-61-230.compute-1.amazonaws.com:5432/d8eub7a2fanhuo'
 # app.config['SQLALCHEMY_DATABASE_URI'] =\
 #         'sqlite:///' + os.path.join(basedir, 'database.db')
 
