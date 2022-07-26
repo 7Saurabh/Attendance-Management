@@ -1,0 +1,6 @@
+database has been fixed!
+now there are two tables rather than one 
+one table { name: User } will be for temporary use { to take data of one day }
+another table { name : attendance } will be for permenant data of Students 
+first table have this columns { id username password attendance }
+second talbe have this columns { date ids }

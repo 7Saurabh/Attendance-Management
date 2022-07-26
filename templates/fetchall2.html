@@ -1,0 +1,12 @@
+<table border="1">
+  <tr>
+    <th>Date</th>
+    <th>Id's</th>
+  </tr>
+  {% for row in rows %}
+  <tr>
+    <td>{{ row.date }}</td>
+    <td>{{ row.ids }}</td>
+  </tr>
+  {% endfor %}
+</table>
