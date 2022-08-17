@@ -5,7 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 import random
 import json
+from datetime import datetime
 # from flask_migrate import Migrate
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'TheTopSecret'
@@ -29,14 +31,17 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 class Attendance(db.Model):
-    date = db.Column(db.Integer, primary_key=True)
-    ids = db.Column(db.String(120))
+    date = db.Column(db.String, primary_key=True)
+    # subjects = db.Column(db.String(255))
+    awp_ids = db.Column(db.String(255))
+    spm_ids = db.Column(db.String(255))
 
     def __repr__(self):
         return '<Attendance %r>' % self.date
 
-@app.route('/register', methods=('GET','POST'))
+@app.route('/', methods=('GET','POST')) # /register have to add.
 def register():
+    # STARTS ORIGINAL REGISTER ROUTE
     if request.method == "POST":
         uname = request.form['uname']
         psw = request.form['psw']
@@ -88,10 +93,11 @@ def fetchall2():
                             title='Overview',
                             rows=rows)
 
-@app.route('/markAttendance', methods=('GET','POST'))
+@app.route('/markAttendance', methods=['GET','POST'])
 def markAttendance():
     if request.method == 'POST':
         uname = request.form['uname']
+        subject = request.form['subject']
         stmt = select(User.username).where(User.username == uname) 
         result = db.session.execute(stmt)                                   
         og_uname = result.fetchone() 
@@ -110,12 +116,25 @@ def markAttendance():
                 p = k.replace("(","")
                 fnl = p.replace("'","")
                 all_ids += str(fnl)
-            Attendance.query.filter_by(date="26072022").update(dict(ids=all_ids))
+                # For reseting value after adding to the another "Attedance Table"
+                # Reseting values for every day purpose
+                # User.query.filter_by(username=uname).update(dict(attendance=False))
+                # db.session.commit()
+            # Attendance.query.filter_by(date=datetime.today().strftime('%d-%m-%Y')).update(dict(ids=all_ids))
+            ccdate = datetime.today().strftime('%d-%m-%Y')
+            strdate = str(ccdate)
+            # Attendance.query.filter_by(date=strdate).update(dict(ids=all_ids)) OG
+            print(subject)
+            if str(subject) == "AWP":
+                Attendance.query.filter_by(date=strdate).update(dict(awp_ids=all_ids))
+            else:
+                Attendance.query.filter_by(date=strdate).update(dict(spm_ids=all_ids))
             db.session.commit()
         else:
             flash('something is wrong')
 
     return render_template('mark_attendance.html')
+
 
 @app.route("/qrgenerate", methods=['GET', 'POST'])
 def qrgenerate():
@@ -160,10 +179,46 @@ def logout():
     # have to do logout buttom and template
     return redirect(url_for('login'))
 
+@app.route('/resetUserDB')
+def resetUserDB():
+    # fetching in attendance if prev Date is not current Date
+    for date in db.session.query(Attendance.date):
+        pass
+    date = str(date)
+    k = date.replace("'","")
+    n = k.replace(",","")
+    g = n.replace(")","")
+    sorted_date = g.replace("(","")
+    print(sorted_date)
+    if sorted_date !=  datetime.today().strftime('%d-%m-%Y'):
+        # This function is to reset the User DB every day !
+        # This will make every True value in the database False.
+        for id_s in db.session.query(User.username).where(User.attendance == True):
+            id_s = str(id_s)
+            k = id_s.replace(")","")
+            p = k.replace("(","")
+            s = p.replace("'","")
+            fnl = s.replace(",","")
+            print(fnl)
+            print()
+            User.query.filter_by(username=fnl).update(dict(attendance=False))
+            db.session.commit()
+
+        # Creating new row for new Date
+        # admin = Attendance(date=datetime.today().strftime('%d-%m-%Y'))
+        ccdate = datetime.today().strftime('%d-%m-%Y')
+        strdate = str(ccdate)
+        admin = Attendance(date=strdate)
+        db.session.add(admin)
+        db.session.commit()
+    return "<h1> Reset <h1>"
+    # return redirect(url_for('register'))
+
 
 # migrate = Migrate(app, db)
 
 if __name__ == '__main__':
+    # app.run(port=3000,host="0.0.0.0")
     app.run(debug=True)
 
 
@@ -173,3 +228,7 @@ if __name__ == '__main__':
 # while scanning you can't flash or do anything redirect as such
 # User.query.filter(User.id == 123).delete()
 # db.session.commit()
+
+# TO UPDATE DATE QUERY = { Attendance.query.filter_by(date="17-08-2022").update(dict(date="16-08-2022")) }
+
+# If we create different routes for every subject we  can add attendance easily to "Attendance" DB 
